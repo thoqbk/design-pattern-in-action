@@ -1,18 +1,20 @@
 <html>
 <head>
-  <link rel="stylesheet" href="css/reveal.css">
-  <link rel="stylesheet" href="css/theme/black.css">
+  <link rel="stylesheet" href="/css/reveal.css">
+  <link rel="stylesheet" href="/css/theme/simple.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  <script src="script/slide-controller.js"></script>
 </head>
-<body>
+<body ng-app="slideApp">
   <div class="reveal">
-    <div class="slides">
-      <section>Slide 1</section>
-      <section>Slide 2</section>
+    <div class="reveal" ng-controller="SlideController">
+      <div class="slides">
+        <section ng-repeat="page in pages" ng-include="'pages/' + page">
+        </section>
+      </div>
     </div>
   </div>
   <script src="script/reveal.js"></script>
-  <script>
-    Reveal.initialize();
-  </script>
 </body>
 </html>
