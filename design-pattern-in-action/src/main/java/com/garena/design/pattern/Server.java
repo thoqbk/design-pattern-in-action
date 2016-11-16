@@ -1,14 +1,7 @@
 package com.garena.design.pattern;
 
-import com.garena.design.pattern.interceptor.Direction;
-import com.garena.design.pattern.interceptor.Message;
-import com.garena.design.pattern.interceptor.impl.BinaryInterceptor;
-import com.garena.design.pattern.interceptor.impl.CompressInterceptor;
-import com.garena.design.pattern.interceptor.impl.EncryptInterceptor;
-import com.garena.design.pattern.interceptor.impl.JSONInterceptor;
+import com.garena.design.pattern.interceptor.*;
 import com.garena.design.pattern.interceptor.impl.MessageContextImpl;
-import com.garena.design.pattern.interceptor.Pipeline;
-import com.garena.design.pattern.interceptor.PipelineFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -20,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Server extends Thread implements MessageListener {
 
-    private static final int PORT = 1311;
+    public static final int PORT = 1311;
 
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
@@ -43,23 +35,13 @@ public class Server extends Thread implements MessageListener {
 
     public Server() throws IOException {
         this.serverSocket = new ServerSocket(PORT);
-
         this.pipeline = PipelineFactory.get("encrypt+compress");
     }
-
-    public static void main(String[] args) throws IOException {
-        PropertyConfigurator.configure(Client.class.getResource("/com/garena/design/pattern/in/action/resource/log4j.properties"));
-        Server server = new Server();
-        server.start();
-        logger.info("Server is running at port " + PORT);
-        System.in.read();
-        server.close();
-    }
-
+    
     public void close() {
         try {
             this.serverSocket.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
         }
         this.interrupt();
         for (SocketReader reader : this.readers) {

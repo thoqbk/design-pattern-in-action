@@ -1,9 +1,6 @@
 package com.garena.design.pattern.interceptor;
 
-import com.garena.design.pattern.interceptor.impl.BinaryInterceptor;
-import com.garena.design.pattern.interceptor.impl.CompressInterceptor;
-import com.garena.design.pattern.interceptor.impl.EncryptInterceptor;
-import com.garena.design.pattern.interceptor.impl.JSONInterceptor;
+import com.garena.design.pattern.interceptor.impl.*;
 import java.util.HashMap;
 import java.util.Map;
 

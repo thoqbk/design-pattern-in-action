@@ -84,10 +84,10 @@ public class StateMachineContextImpl implements Context {
                 break;
             }
         }
+        logger.info("Changed state to \"" + name + "\"");
         if (allowDefaultEvent) {
             this.process(null, args);
-        }
-        logger.info("Changed state to \"" + name + "\"");
+        }        
     }
 
     @Override

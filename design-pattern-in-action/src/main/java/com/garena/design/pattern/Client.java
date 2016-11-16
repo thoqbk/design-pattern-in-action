@@ -3,7 +3,6 @@ package com.garena.design.pattern;
 import com.garena.design.pattern.interceptor.Pipeline;
 import com.garena.design.pattern.interceptor.PipelineFactory;
 import com.garena.design.pattern.state.impl.ConnectionImpl;
-import com.garena.design.pattern.interceptor.impl.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,17 +21,15 @@ import org.slf4j.LoggerFactory;
 public class Client implements MessageListener {
 
     private final Connection connection;
-    private static final String HOST = "localhost";
-    private static final int PORT = 1311;
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 1311;
 
     private static final List<String> VALID_COMMANDS = Arrays.asList("exit", "ls", "cd", "cat");
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
-    public Client() {
-        Pipeline pipeline = PipelineFactory.get("encrypt+compress");
-
-        this.connection = new ConnectionImpl(pipeline, HOST, PORT);
+    private Client(String host, int port, Pipeline pipeline) {
+        this.connection = new ConnectionImpl(pipeline, host, port);
     }
 
     public void start() throws IOException {
@@ -53,11 +49,6 @@ public class Client implements MessageListener {
             message.put("body", command);
             connection.send(message);
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        PropertyConfigurator.configure(Client.class.getResource("/com/garena/design/pattern/in/action/resource/log4j.properties"));
-        (new Client()).start();
     }
 
     @Override
@@ -84,7 +75,7 @@ public class Client implements MessageListener {
     @Override
     public void on(Exception ex) {
     }
-    
+
     private String[] parseCommand(String line) {
         String[] retVal = line.trim()
                 .replaceAll("\\s+", " ")
@@ -94,5 +85,49 @@ public class Client implements MessageListener {
         }
         logger.debug("Command: " + Arrays.toString(retVal));
         return retVal;
+    }
+
+    public static class Builder {
+
+        private int port = DEFAULT_PORT;
+        private String host = DEFAULT_HOST;
+        private boolean encrypt = false;
+        private boolean compress = false;
+
+        public Builder setHost(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public Builder setPort(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public Builder encrypt(boolean b) {
+            encrypt = b;
+            return this;
+        }
+
+        public Builder compress(boolean b) {
+            compress = b;
+            return this;
+        }
+
+        public Client build() {
+            String pipelineName = null;
+            if (compress) {
+                pipelineName = "compress";
+            }
+            if (encrypt) {
+                pipelineName = (pipelineName == null) ? "encrypt" : "compress+encrypt";
+            }
+            if (pipelineName == null) {
+                pipelineName = "default";
+            }
+            Pipeline pipeline = PipelineFactory.get(pipelineName);
+            //return
+            return new Client(host, port, pipeline);
+        }
     }
 }
