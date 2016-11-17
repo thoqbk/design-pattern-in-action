@@ -24,7 +24,7 @@ public class Client implements MessageListener {
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 1311;
 
-    private static final List<String> VALID_COMMANDS = Arrays.asList("exit", "ls", "cd", "cat");
+    private static final List<String> VALID_COMMANDS = Arrays.asList("exit", "ls", "cd", "cat", "python", "pwd");
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
@@ -56,13 +56,14 @@ public class Client implements MessageListener {
         if ("fail".equals(message.optString("status"))) {
             logger.info(message.getString("body"));
         } else if ("successful".equals(message.optString("status"))) {
+            logger.info("-----");
             JSONArray body = message.optJSONArray("body");
             if (body != null) {
                 for (int idx = 0; idx < body.size(); idx++) {
-                    logger.info(body.getString(idx));
+                    logger.info("> " + body.getString(idx));
                 }
             } else if (message.optString("body", null) != null) {
-                logger.info(message.getString("body"));
+                logger.info("> " + message.getString("body"));
             }
         }
     }
@@ -83,7 +84,7 @@ public class Client implements MessageListener {
         if (retVal.length == 0 || !VALID_COMMANDS.contains(retVal[0])) {
             retVal = null;
         }
-        logger.debug("Command: " + Arrays.toString(retVal));
+        //logger.debug("Command: " + Arrays.toString(retVal));
         return retVal;
     }
 
@@ -115,16 +116,18 @@ public class Client implements MessageListener {
         }
 
         public Client build() {
-            String pipelineName = null;
-            if (compress) {
-                pipelineName = "compress";
-            }
+            String pipelineName = null;     
+            
             if (encrypt) {
-                pipelineName = (pipelineName == null) ? "encrypt" : "compress+encrypt";
+                pipelineName = "encrypt";
+            }
+            if (compress) {
+                pipelineName = (pipelineName == null) ? "compress" : "encrypt+compress";
             }
             if (pipelineName == null) {
                 pipelineName = "default";
             }
+            System.out.println("" + pipelineName);
             Pipeline pipeline = PipelineFactory.get(pipelineName);
             //return
             return new Client(host, port, pipeline);

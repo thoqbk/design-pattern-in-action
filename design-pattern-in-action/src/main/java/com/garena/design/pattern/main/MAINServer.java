@@ -20,7 +20,7 @@ public class MAINServer {
         PropertyConfigurator.configure(Client.class.getResource("/com/garena/design/pattern/in/action/resource/log4j.properties"));
         Server server = new Server();
         server.start();
-        logger.info("Server is running at port " + Server.PORT);
+        logger.info("Server is running on port " + Server.PORT);
         System.in.read();
         server.close();
     }

@@ -3,9 +3,11 @@ package com.garena.design.pattern;
 import com.garena.design.pattern.interceptor.*;
 import com.garena.design.pattern.interceptor.impl.MessageContextImpl;
 import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -37,7 +39,7 @@ public class Server extends Thread implements MessageListener {
         this.serverSocket = new ServerSocket(PORT);
         this.pipeline = PipelineFactory.get("encrypt+compress");
     }
-    
+
     public void close() {
         try {
             this.serverSocket.close();
@@ -130,7 +132,11 @@ public class Server extends Thread implements MessageListener {
                             File newCurrentDirectory = new File(currentDirectory, command.getString(1));
                             if (newCurrentDirectory.exists() && newCurrentDirectory.isDirectory()) {
                                 response.put("status", "successful");
-                                this.currentDirectory = newCurrentDirectory.getAbsolutePath();
+                                try {
+                                    this.currentDirectory = newCurrentDirectory.getCanonicalPath();
+                                } catch (IOException ex) {
+                                    logger.error(null, ex);
+                                }
                             } else {
                                 response.put("status", "fail");
                                 response.put("body", "Invalid directory");
@@ -156,6 +162,23 @@ public class Server extends Thread implements MessageListener {
                                 response.put("status", "fail");
                                 response.put("body", "Invalid file path: " + command.getString(1));
                             }
+                        }
+                        break;
+                    }
+                    case "pwd": {
+                        response.put("status", "successful");
+                        response.put("body", currentDirectory);
+                        break;
+                    }
+                    case "python": {                        
+                        try {
+                            String filePath = new File(this.currentDirectory, command.getString(1)).getCanonicalPath();
+                            Process process = Runtime.getRuntime().exec("/usr/local/bin/python " + filePath);
+                            String result = CharStreams.toString( new InputStreamReader( process.getInputStream(), "UTF-8" ) );
+                            response.put("status", "successful");
+                            response.put("body", result);
+                        } catch (IOException ex) {
+                            logger.error(null, ex);
                         }
                         break;
                     }
@@ -195,7 +218,7 @@ public class Server extends Thread implements MessageListener {
         }
         return retVal;
     }
-    
+
     private void sayHelloClient(OutputStream outputStream) throws IOException {
         JSONObject json = new JSONObject();
         json.put("body", "Hello Client");

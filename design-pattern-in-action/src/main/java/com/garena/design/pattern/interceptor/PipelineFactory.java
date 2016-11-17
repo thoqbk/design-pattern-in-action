@@ -49,6 +49,7 @@ public final class PipelineFactory {
         
         //encrypt+compress:
         Pipeline encryptNCompress = new Pipeline();
+        
         encryptNCompress.attach(new BinaryInterceptor());
         encryptNCompress.attach(new EncryptInterceptor());
         encryptNCompress.attach(new CompressInterceptor());

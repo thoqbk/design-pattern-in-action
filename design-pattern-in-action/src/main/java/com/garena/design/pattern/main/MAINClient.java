@@ -40,8 +40,5 @@ public class MAINClient {
                 .setPort(1311)
                 .build();
         client.start();
-        
-        
-        
     }
 }

@@ -127,7 +127,7 @@ public class StateMachineContextImpl implements Context {
             try {
                 ((OutputStream) get("outputStream")).write((byte[]) messageContext.getMessage().getContent());
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                this.setState("retry");
             }
         } else if ("receive".equals(event)) {
             MessageContextImpl messageContext = new MessageContextImpl(Direction.UP);
